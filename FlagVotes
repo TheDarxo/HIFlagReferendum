@@ -1,0 +1,421 @@
+import sys
+from operator import itemgetter
+
+#Menu system to choose between adding a vote between the text file or viewing the results.
+def menu():
+    print("===============================================================")
+    print("Choose an option;")
+    print("1: Add a vote.")
+    print("2: View the results.")
+    print("3: Quit.")
+    userInput = raw_input("")
+    if userInput == "1":
+        print("")
+        addVote()
+    elif userInput == "2":
+        print("")
+        viewResults()
+    elif userInput == "3":
+        print("Are you sure you want to quit? [Y/N]")
+        userInput = raw_input("")
+        if userInput == "Y" or userInput == "y":
+            sys.exit()
+        else:
+            print("")
+            menu()
+    else:
+        print("That is not a valid choice, please choose again.")
+        print("")
+        menu()
+
+#Allows the user to input the votes as single letter strings; either c, f, h, n or w.
+def addVote():
+    userInput = "a"
+    count = 0
+    newTuple = []
+    addVoteStrings()
+    while userInput != "" and count < 5:
+        userInput = raw_input("")
+        if userInput == "c" or userInput == "f" or userInput == "h" or userInput == "n" or userInput == "w":
+            count = count + 1
+            newTuple.append(userInput)
+        elif userInput == "Q" or userInput == "q":
+            print("Are you sure that you want to go back? [Y/N]")
+            userInput = raw_input("")
+            if userInput == "Y" or userInput == "y":
+                print("")
+                menu()
+            else:
+                tempTuple = voteConvert(newTuple)
+                print("The list so far look like this;")
+                print(tempTuple)
+                addVoteStrings()
+        elif userInput == (""):
+            print("End of Vote.")
+            print("")
+        else:
+            print("That is not a valid vote, please try again.")
+            print("The votes so far look like this;")
+            tempTuple = voteConvert(newTuple)
+            print(tempTuple)
+            print("")
+            addVoteStrings()                
+    print("The finished ballot looks like this;")
+    tempTuple = voteConvert(newTuple)
+    print(tempTuple)
+    print("Is this correct? [Y/N]")
+    userInput = raw_input("")
+    if userInput == "Y" or userInput == "y":
+        tempString = voteConvertString(newTuple)
+        openFile = open("savedvotes.txt", "a")
+        openFile.write(tempString)
+        openFile.close()
+        print("Ballot saved!")
+        print("Would you like to add another? [Y/N]")
+        userInput = raw_input("")
+        if userInput == "Y" or userInput == "y":
+            print("")
+            addVote()
+        else:
+            print("")
+            menu()
+    else:
+        print("Okay, we'll take it again.")
+        print("")
+        addVote()
+
+#A collection of strings that are printed regularly.
+def addVoteStrings():
+    print("Enter the votes on the ballot in order, top to bottom, as follows; ")
+    print("c: Club and Claws.")
+    print("f: Flaggy Flag.")
+    print("h: H.I. Logo.")
+    print("n: Nail and Gear.")
+    print("w: White Cross.")
+    print("Type nothing and just press enter when all votes are accouted for.")
+    print("Type Q to cancel the vote and go back to the menu.")
+
+#Takes the single letter string and displays the full version.
+def voteConvert(inputTuple):
+    newTuple = []
+    for item in inputTuple:
+        if item == "c":
+            newTuple.append("Club and Claws")
+        if item == "f":
+            newTuple.append("Flaggy Flag")
+        if item == "h":
+            newTuple.append("H.I. Logo")
+        if item == "n":
+            newTuple.append("Nail and Gear")
+        if item == "w":
+            newTuple.append("White Cross")
+    return newTuple
+
+#Turns each tuple into a string to be written to the text file.
+def voteConvertString(inputTuple):
+    newString = ""
+    for item in inputTuple:
+        if len(newString) == 0:
+            newString = newString + item
+        else:
+            newString = newString + "," + item
+    newString = newString + "\n"
+    return(newString)
+
+#Allows the user to see the results.
+def viewResults():
+    voteList = []
+    openFile = open("savedvotes.txt", "r")
+    allVotes = openFile.readlines()
+    openFile.close()
+    for vote in allVotes:
+        vote = vote.strip()
+        tempVote = vote.split(",")
+        voteList.append(tempVote)
+    print("Votes Converted!")
+    print("")
+    firstPass(voteList)
+
+#First pass of voting.
+def firstPass(voteList):
+    global totalVotes
+    global cVotes
+    global fVotes
+    global hVotes
+    global nVotes
+    global wVotes
+    global cFlag
+    global fFlag
+    global hFlag
+    global nFlag
+    global wFlag
+    global sizeList
+    print("First Pass of Voting;")
+    for vote in voteList:
+        if vote[0] == "c":
+            cVotes = cVotes + 1
+            sizeList = updateSizeList(vote[0], sizeList)
+        if vote[0] == "f":
+            fVotes = fVotes + 1
+            sizeList = updateSizeList(vote[0], sizeList)
+        if vote[0] == "h":
+            hVotes = hVotes + 1
+            sizeList = updateSizeList(vote[0], sizeList)
+        if vote[0] == "n":
+            nVotes = nVotes + 1
+            sizeList = updateSizeList(vote[0], sizeList)
+        if vote[0] == "w":
+            wVotes = wVotes + 1
+            sizeList = updateSizeList(vote[0], sizeList)
+        totalVotes = totalVotes + 1
+    print("The results are;")
+    print("Club and Claws, " + str(cVotes) + " votes.")
+    print("Flaggy Flag, " + str(fVotes) + " votes.")
+    print("H.I. Logo, " + str(hVotes) + " votes.")
+    print("Nail and Gear, " + str(nVotes) + " votes.")
+    print("White Cross, " + str(wVotes) + " votes.")
+    findWinner()
+    print("Go to Second Pass.")
+    print("")
+    secondPass(voteList)
+
+#Second pass of voting.
+def secondPass(voteList):
+    global totalVotes
+    global cVotes
+    global fVotes
+    global hVotes
+    global nVotes
+    global wVotes
+    global cFlag
+    global fFlag
+    global hFlag
+    global nFlag
+    global wFlag
+    global sizeList
+    cont = raw_input("Press Enter to Continue.")
+    print("Second Pass of Voting;")
+    sortedSizeList = sorted(sizeList, key = itemgetter(2))
+    smallest = sortedSizeList[0]
+    sizeList.remove(smallest)
+    print(smallest[1] + " has the least votes with " + str(smallest[2]) + ".")
+    if smallest[0] == "c":
+        cFlag = True
+    if smallest[0] == "f":
+        fFlag = True
+    if smallest[0] == "h":
+        hFlag = True
+    if smallest[0] == "n":
+        nFlag = True
+    if smallest[0] == "w":
+        wFlag = True
+    print("Redistributing their second choices...")
+    for vote in voteList:
+        if len(vote) > 1 and vote[0] == smallest[0]:
+            if vote[1] == "c" and cFlag == False:
+                cVotes = cVotes + 1
+                sizeList = updateSizeList(vote[1], sizeList)
+            if vote[1] == "f" and fFlag == False:
+                fVotes = fVotes + 1
+                sizeList = updateSizeList(vote[1], sizeList)
+            if vote[1] == "h" and hFlag == False:
+                hVotes = hVotes + 1
+                sizeList = updateSizeList(vote[1], sizeList)
+            if vote[1] == "n" and nFlag == False:
+                nVotes = nVotes + 1
+                sizeList = updateSizeList(vote[1], sizeList)
+            if vote[1] == "w" and wFlag == False:
+                wVotes = wVotes + 1
+                sizeList = updateSizeList(vote[1], sizeList)
+    print("The results are;")
+    print("Club and Claws, " + str(cVotes) + " votes.")
+    print("Flaggy Flag, " + str(fVotes) + " votes.")
+    print("H.I. Logo, " + str(hVotes) + " votes.")
+    print("Nail and Gear, " + str(nVotes) + " votes.")
+    print("White Cross, " + str(wVotes) + " votes.")
+    findWinner()
+    print("Go to Third Pass.")
+    print("")
+    thirdPass(voteList)
+
+#Third pass of voting.
+def thirdPass(voteList):
+    global totalVotes
+    global cVotes
+    global fVotes
+    global hVotes
+    global nVotes
+    global wVotes
+    global cFlag
+    global fFlag
+    global hFlag
+    global nFlag
+    global wFlag
+    global sizeList
+    cont = raw_input("Press Enter to Continue.")
+    print("Third Pass of Voting;")
+    sortedSizeList = sorted(sizeList, key = itemgetter(2))
+    smallest = sortedSizeList[0]
+    sizeList.remove(smallest)
+    print(smallest[1] + " has the least votes with " + str(smallest[2]) + ".")
+    if smallest[0] == "c":
+        cFlag = True
+    if smallest[0] == "f":
+        fFlag = True
+    if smallest[0] == "h":
+        hFlag = True
+    if smallest[0] == "n":
+        nFlag = True
+    if smallest[0] == "w":
+        wFlag = True
+    print("Redistributing their third choices...")
+    for vote in voteList:
+        if len(vote) > 2 and vote[1] == smallest[0]:
+            if vote[2] == "c" and cFlag == False:
+                cVotes = cVotes + 1
+                sizeList = updateSizeList(vote[2], sizeList)
+            if vote[2] == "f" and fFlag == False:
+                fVotes = fVotes + 1
+                sizeList = updateSizeList(vote[2], sizeList)
+            if vote[2] == "h" and hFlag == False:
+                hVotes = hVotes + 1
+                sizeList = updateSizeList(vote[2], sizeList)
+            if vote[2] == "n" and nFlag == False:
+                nVotes = nVotes + 1
+                sizeList = updateSizeList(vote[2], sizeList)
+            if vote[2] == "w" and wFlag == False:
+                wVotes = wVotes + 1
+                sizeList = updateSizeList(vote[2], sizeList)
+    print("The results are;")
+    print("Club and Claws, " + str(cVotes) + " votes.")
+    print("Flaggy Flag, " + str(fVotes) + " votes.")
+    print("H.I. Logo, " + str(hVotes) + " votes.")
+    print("Nail and Gear, " + str(nVotes) + " votes.")
+    print("White Cross, " + str(wVotes) + " votes.")
+    findWinner()
+    print("Go to Fourth Pass.")
+    print("")
+    fourthPass(voteList)
+
+#Fourth pass of voting.
+def fourthPass(voteList):
+    global totalVotes
+    global cVotes
+    global fVotes
+    global hVotes
+    global nVotes
+    global wVotes
+    global cFlag
+    global fFlag
+    global hFlag
+    global nFlag
+    global wFlag
+    global sizeList
+    cont = raw_input("Press Enter to Continue.")
+    print("Fourth Pass of Voting;")
+    sortedSizeList = sorted(sizeList, key = itemgetter(2))
+    smallest = sortedSizeList[0]
+    sizeList.remove(smallest)
+    print(smallest[1] + " has the least votes with " + str(smallest[2]) + ".")
+    if smallest[0] == "c":
+        cFlag = True
+    if smallest[0] == "f":
+        fFlag = True
+    if smallest[0] == "h":
+        hFlag = True
+    if smallest[0] == "n":
+        nFlag = True
+    if smallest[0] == "w":
+        wFlag = True
+    print("Redistributing their fourth choices...")
+    for vote in voteList:
+        if len(vote) > 3 and vote[2] == smallest[0]:
+            if vote[3] == "c" and cFlag == False:
+                cVotes = cVotes + 1
+                sizeList = updateSizeList(vote[3], sizeList)
+            if vote[3] == "f" and fFlag == False:
+                fVotes = fVotes + 1
+                sizeList = updateSizeList(vote[3], sizeList)
+            if vote[3] == "h" and hFlag == False:
+                hVotes = hVotes + 1
+                sizeList = updateSizeList(vote[3], sizeList)
+            if vote[3] == "n" and nFlag == False:
+                nVotes = nVotes + 1
+                sizeList = updateSizeList(vote[3], sizeList)
+            if vote[3] == "w" and wFlag == False:
+                wVotes = wVotes + 1
+                sizeList = updateSizeList(vote[3], sizeList)
+    print("The results are;")
+    print("Club and Claws, " + str(cVotes) + " votes.")
+    print("Flaggy Flag, " + str(fVotes) + " votes.")
+    print("H.I. Logo, " + str(hVotes) + " votes.")
+    print("Nail and Gear, " + str(nVotes) + " votes.")
+    print("White Cross, " + str(wVotes) + " votes.")
+    findWinner()
+    print("Picking highest vote...")
+    sortedSizeList = sorted(sizeList, key = itemgetter(2), reverse = True)
+    highest = sortedSizeList[0]
+    print("Highest vote is " + highest[1] + "!")
+    print("")
+    cont = raw_input("Press Enter to Continue.")
+    print("")
+    menu()    
+
+#Considers each flag and if they have over 50% of the vote, they win.
+def findWinner():
+    global cVotes
+    global fVotes
+    global hVotes
+    global nVotes
+    global wVotes
+    global totalVotes
+    if (cVotes / totalVotes) >= 0.5 and cVotes > 0:
+        print("Club and Claws Wins!")
+        cont = raw_input("Press Enter to Continue.")
+        print("")
+        menu()
+    elif (fVotes / totalVotes) >= 0.5 and fVotes > 0:
+        print("Flaggy Flag Wins!")
+        cont = raw_input("Press Enter to Continue.")
+        print("")
+        menu()
+    elif (hVotes / totalVotes) >= 0.5 and hVotes > 0:
+        print("H.I. Logo Wins!")
+        cont = raw_input("Press Enter to Continue.")
+        print("")
+        menu()
+    elif (nVotes / totalVotes) >= 0.5 and nVotes > 0:
+        print("Nail and Gear Wins!")
+        cont = raw_input("Press Enter to Continue.")
+        print("")
+        menu()
+    elif (wVotes / totalVotes) >= 0.5 and wVotes > 0:
+        print("White Cross Wins!")
+        cont = raw_input("Press Enter to Continue.")
+        print("")
+        menu()
+    else:
+        print("No majority vote.")
+
+#Updates the value in the sizeList, incrementing it by 1.
+def updateSizeList(inputString, sizeList):
+    for item in sizeList:
+        if item[0] == inputString:
+            item[2] = item[2] + 1
+    return sizeList
+
+totalVotes = 0
+cVotes = 0
+fVotes = 0
+hVotes = 0
+nVotes = 0
+wVotes = 0
+cFlag = False
+fFlag = False
+hFlag = False
+nFlag = False
+wFlag = False
+#Keeps track of which flag has the least votes.
+sizeList = [["c", "Club and Claws", cVotes], ["f", "Flaggy Flag", fVotes], ["h", "H.I. Logo", hVotes], ["n", "Nail and Gear", nVotes], ["w", "White Cross", wVotes]]
+           
+menu()
